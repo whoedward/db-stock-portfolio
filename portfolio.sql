@@ -5,8 +5,9 @@ create table portfolio_users (
 );
 
 create table portfolio_portfolio(
-  
-  owner varchar(64) not null references portfolio_users(name)
+  id number not null, 
+  owner varchar(64) not null references portfolio_users(name),
+  constraint portfolio_unique UNIQUE(id, owner)
 );
 
 create table portfolio_stock_portfolio(
