@@ -2,14 +2,10 @@
 
 use strict;
 
-
-
-
 use CGI qw(:standard);
 use URI::Escape;
 use Switch;
 use Scalar::Util;
-
 
 use DBI;
 
@@ -39,13 +35,50 @@ if (defined (param("act"))) {
 
 if ( defined ($inputcookiecontent)){
   ($user, $password) = split(/\//, $inputcookiecontent);
-$outputcookiecontent = $inputcookiecontent; 
+  $outputcookiecontent = $inputcookiecontent; 
 }else{
- ($user, $password) = ("anon", "anonanon");   
+  ($user, $password) = ("anon", "anonanon");   
 }
 
+if ($action eq "logout"){
+  $deletecookie=1;
+  $action = "login";
+  $user = "anon";
+  $password = "anonanon";
+  $run = 1;
+}
 
-print header(-expires=>'now');
+if ($action eq "login"){
+  if($run){
+    $user = param('user');
+    $password = param('password');
+
+    if(ValidUser($user,$password)){
+      $outputcookiecontent=join"/",$user,$password);
+      $action = "base";
+      $run = 1;
+    } else {
+      #have user attempt to login again
+      $logincomplain = 1;
+      $action = "login";
+      $run = 0;
+    } else {
+      undef $inputcookiecontent;
+      $user = "anon";
+      $password = "anonanon";
+    }
+  }
+}
+
+my @outputcookies;
+
+if (defined($outputcookiecontent)) {
+  my $cookie = cookie(-name=>$cookiename,
+                      -value=>$outputcookiecontent);
+  push @outputcookies, $cookie;
+}
+
+print header(-expires=>'now', -cookie=>\@outputcookies);
 print "<html>";
 print "<head>";
 print "</head>";
@@ -55,6 +88,8 @@ print "<body>";
 #everything starts here
 
 print $action;
+print "Ur cookie is $inputcookiecontent and ur username is $user and ur password is $password.<br>";
+
 
 #base page is login/registration
 
