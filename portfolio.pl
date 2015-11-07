@@ -15,6 +15,8 @@ use DBI;
 
 use Time::ParseDate;
 
+print header(-expires=>'now');
+
 print "<html>";
 
 print "<head>";
