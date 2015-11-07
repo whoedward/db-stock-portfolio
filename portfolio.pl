@@ -21,6 +21,8 @@ my $run;
 
 if (defined (param("act"))) {
   $action=param("act");
+} else {
+  $action="reg";
 }
 
 print header(-expires=>'now');
@@ -34,13 +36,21 @@ print "<body>";
 
 print $action;
 
+#base page is login/registration
 
+if ($action eq "reg"){
+  print "You gon b logged in son";
 
+  #put a form here for separately loggin and registering
+}
 
+if ($action eq "portfolios") {
+  print "Look at all this money you don't have";
+}
 
-
-
-
+if ($action eq "portfolio") {
+  print "HAWT COFFEE TO THE FACE";
+}
 
 
 
