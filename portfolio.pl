@@ -14,24 +14,33 @@ my $debug=0; # default - will be overriden by a form parameter or cookie
 my @sqlinput=();
 my @sqloutput=();
 
+my $dbu = "gml654";
+my $dbp = "zgfUP58ol";
+
 my $action;
 my $run;
 
 my $user = undef;
 my $password = undef;
 
-my $cookiename="user_session";
+my $cookiename="portfolio_session";
+my $deletecookie;
 
 my $inputcookiecontent = cookie($cookiename);
 my $outputcookiecontent = undef;
-
+my $logincomplain;
 
 if (defined (param("act"))) {
   $action=param("act");
 } else {
-  $action="reg";
+  $action="register";
 }
 
+if (defined (param("run"))){
+  $run = param("run");
+} else {
+  $run = 0;
+}
 
 if ( defined ($inputcookiecontent)){
   ($user, $password) = split(/\//, $inputcookiecontent);
@@ -54,7 +63,7 @@ if ($action eq "login"){
     $password = param('password');
 
     if(ValidUser($user,$password)){
-      $outputcookiecontent=join"/",$user,$password);
+      $outputcookiecontent=join("/",$user,$password);
       $action = "base";
       $run = 1;
     } else {
@@ -62,11 +71,12 @@ if ($action eq "login"){
       $logincomplain = 1;
       $action = "login";
       $run = 0;
-    } else {
-      undef $inputcookiecontent;
-      $user = "anon";
-      $password = "anonanon";
     }
+
+  } else {
+    undef $inputcookiecontent;
+    $user = "anon";
+    $password = "anonanon";
   }
 }
 
@@ -93,10 +103,57 @@ print "Ur cookie is $inputcookiecontent and ur username is $user and ur password
 
 #base page is login/registration
 
-if ($action eq "reg"){
+if ($action eq "register"){
   print "You gon b logged in son";
 
   #put a form here for separately loggin and registering
+}
+
+if ($action eq "login"){
+  if($logincomplain){
+    print "login failed.  plz try again lol.";
+  }
+  if($logincomplain or !$run){
+    print start_form(-name=>'Login'),
+      h2('Login to your portfolio'),
+    "Name:",textfield(-name=>'user'),   p,
+      "Password:",password_field(-name=>'password'),p,
+        hidden(-name=>'act',default=>['login']),
+          hidden(-name=>'run',default=>['1']),
+        submit,
+          end_form;
+  }
+}
+
+if ($action eq "register"){
+  if(!$run){
+    #print form
+    print start_form(-name=>'Register'),
+    h2('Gib us ur mony'),
+    "Name:",textfield(-name=>'user'), p,
+    "Password:",password_field(-name=>'password'),p,
+    hidden(-name=>'act',default=>['register']),
+    hidden(-name=>'run',default=>['1']),
+    submit,
+    end_form;
+  } else {
+    #do sql stuff
+    print "you just got registed son";
+    my $registername = param('user');
+    my $registerpass = param('password');
+
+    print "u chose the name $registername and password $registerpass";
+
+    my @insertUser;
+
+    eval {
+      @insertUser = ExecSQL($dbu, $dbp, 'INSERT INTO portfolio_users (name, password, balance) VALUES (? , ?, 0)', undef, $registername, $registerpass);
+    };
+
+    if ($@) {
+      print "Insert user error!";
+    }
+  }
 }
 
 if ($action eq "portfolios") {
@@ -115,17 +172,9 @@ print "</html>";
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+sub ValidUser{
+  return 1;
+}
 
 #
 # Given a list of scalars, or a list of references to lists, generates
