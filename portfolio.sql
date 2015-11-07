@@ -9,9 +9,10 @@ create table portfolio_portfolio(
   constraint portfolio_pk primary key (id, owner)
 );
 create table portfolio_stock_portfolio(
-  owner varchar(64) not null references portfolio_portfolio(owner),
+  owner varchar(64) not null references portfolio_users(name),
 --TODO: find out how long stock key can be
-  stock varchar(16) not null references cs339.StocksDaily(symbol),
-  owned number not null
+  stock varchar(16) not null,
+  owned number not null,
+  constraint name unique (owner, stock)
 );
 INSERT into portfolio_users (name, password, balance) VALUES ('an2on', 'anonanon', 0);

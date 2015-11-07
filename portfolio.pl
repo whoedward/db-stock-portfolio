@@ -21,11 +21,29 @@ my @sqloutput=();
 my $action;
 my $run;
 
+my $user = undef;
+my $password = undef;
+
+my $cookiename="user_session";
+
+my $inputcookiecontent = cookie($cookiename);
+my $outputcookiecontent = undef;
+
+
 if (defined (param("act"))) {
   $action=param("act");
 } else {
   $action="reg";
 }
+
+
+if ( defined ($inputcookiecontent)){
+  ($user, $password) = split(/\//, $inputcookiecontent);
+$outputcookiecontent = $inputcookiecontent; 
+}else{
+ ($user, $password) = ("anon", "anonanon");   
+}
+
 
 print header(-expires=>'now');
 print "<html>";
@@ -59,6 +77,20 @@ if ($action eq "portfolio") {
 print "</body>";
 
 print "</html>";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 # Given a list of scalars, or a list of references to lists, generates
