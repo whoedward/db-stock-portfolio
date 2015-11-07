@@ -156,6 +156,37 @@ if ($action eq "register"){
   }
 }
 
+if ($action eq "getmoney"){
+  if(!$run){
+    print start_form(-name>'Getmoney'),
+    h2('Put money in box'),
+    "Money:",textfield(-name=>'money'),p
+    hidden(-name=>'act',default=>['getmoney']),
+    hidden(-name=>'run',default=>['1']),
+    submit,
+    end_form;
+
+    print $user;
+  } else {
+    my $money = param("money");
+
+    print "Going to give you $money money";
+
+    my @insertmoney;
+
+    eval {
+      @insertmoney = ExecSQL($dbu, $dbp, "UPDATE portfolio_users SET balance = balance + ? WHERE name =?", undef, $money, $user);
+    };
+
+    if($@) {
+      print "Error: could not insert money";
+      print $@;
+    } else {
+      print "Inserted $money dollars";
+    }
+  }
+}
+
 if ($action eq "portfolios") {
   print "Look at all this money you don't have";
 }
