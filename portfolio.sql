@@ -1,7 +1,6 @@
 create table portfolio_users (
   name varchar(64) not null primary key,
-  password varchar(64) not null,
-  balance number not null
+  password varchar(64) not null
 );
 create table portfolio_portfolio(
   id number not null, 
@@ -18,3 +17,9 @@ create table portfolio_stock_portfolio(
 );
 
 --INSERT into portfolio_users (name, password, balance) VALUES ('anon', 'anonanon', 0);
+--Test users--
+INSERT into portfolio_users (name, password) VALUES ('poorjoe','poorjoe');
+INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'poorjoe', 0);
+
+INSERT into portfolio_users (name, password) VALUES ('bigshot', 'bigshoot');
+INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'bigshot',0);

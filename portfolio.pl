@@ -158,6 +158,9 @@ if ($action eq "register"){
 
 if ($action eq "getmoney"){
   if(!$run){
+
+    print "TODO: have this dynamically get the users balances of each portfolio instead.";
+
     print start_form(-name>'Getmoney'),
     h2('Put money in box'),
     "Money:",textfield(-name=>'money'),p
@@ -185,6 +188,10 @@ if ($action eq "getmoney"){
       print "Inserted $money dollars";
     }
   }
+}
+
+if ($action eq "create-portfolio") {
+    print "Creating portfolio";
 }
 
 if ($action eq "portfolios") {
