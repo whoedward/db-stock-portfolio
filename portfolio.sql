@@ -6,7 +6,8 @@ create table portfolio_users (
 create table portfolio_portfolio(
   id number not null, 
   owner varchar(64) not null references portfolio_users(name),
-  constraint portfolio_pk primary key (id, owner)
+  constraint portfolio_pk primary key (id, owner),
+  balance number not null
 );
 create table portfolio_stock_portfolio(
   owner varchar(64) not null references portfolio_users(name),
@@ -15,4 +16,5 @@ create table portfolio_stock_portfolio(
   owned number not null,
   constraint name unique (owner, stock)
 );
-INSERT into portfolio_users (name, password, balance) VALUES ('an2on', 'anonanon', 0);
+
+--INSERT into portfolio_users (name, password, balance) VALUES ('anon', 'anonanon', 0);
