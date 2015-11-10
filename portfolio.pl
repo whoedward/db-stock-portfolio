@@ -198,11 +198,11 @@ if ($action eq "portfolio-balance") {
     print "Giving u le money";
 }
 
-if ($action eq "portfolios") {
+if ($action eq "view-portfolios") {
   print "Look at all this money you don't have";
 }
 
-if ($action eq "portfolio") {
+if ($action eq "view-portfolio") {
   print "HAWT COFFEE TO THE FACE";
 }
 
