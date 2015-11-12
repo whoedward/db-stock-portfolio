@@ -20,10 +20,11 @@ INSERT into portfolio_stock_symbols (symbol) select unique symbol from cs339.Sto
 create table portfolio_stock_portfolio(
   owner varchar(64) not null references portfolio_users(name),
 --TODO: find out how long stock key can be
-  stock varchar(16) not null,
+  stock varchar(16) not null references portfolio_stock_symbols(name),
   owned number not null,
   constraint name unique (owner, stock)
 );
+
 --INSERT into portfolio_users (name, password, balance) VALUES ('anon', 'anonanon', 0);
 --Test users--
 INSERT into portfolio_users (name, password) VALUES ('poorjoe','poorjoe');
