@@ -97,16 +97,24 @@ print "<body>";
 
 #everything starts here
 
-print $action;
-print "Ur cookie is $inputcookiecontent and ur username is $user and ur password is $password.<br>";
-
+print "Begin generic debug info:<br>";
+print "============================================================================================<br>";
+print "act = $action;<br>";
+print "Your cookie is $inputcookiecontent<br>", "Current username: $user<br>", "Current password: $password<br>";
+print "End debug info<br>";
+print "============================================================================================<br>";
+print "<br><br><br>";
 
 #base page is login/registration
 
 if ($action eq "register"){
-  print "You gon b logged in son";
+  print "Register to start making portfolios";
 
-  #put a form here for separately loggin and registering
+  if(!$run){
+
+  } else {
+
+  }
 }
 
 if ($action eq "login"){
@@ -156,6 +164,8 @@ if ($action eq "register"){
   }
 }
 
+
+#OUTDATED DELETE THIS ACTIONA
 if ($action eq "getmoney"){
   if(!$run){
 
@@ -194,16 +204,39 @@ if ($action eq "create-portfolio") {
     print "Creating portfolio";
 }
 
-if ($action eq "portfolio-balance") {
-    print "Giving u le money";
+if ($action eq "view-portfolios") {
+  print "Print out the selection of portfolios that user has.<br>";
+
+  print "Click <a href='http://muprhy.wot.eecs.northwestern.edu/~gml654/porthere to add a new portfolio.";
 }
 
-if ($action eq "view-portfolios") {
-  print "Look at all this money you don't have";
+if ($action eq "add-portfolio") {
+  print "Giving user a portfolio";
 }
 
 if ($action eq "view-portfolio") {
-  print "HAWT COFFEE TO THE FACE";
+  my $whichportfolio = param('portfolio');
+
+  #first we get each stock symbol in the portfolio
+  
+
+  print "Making a covar matrix for your stocks <br> ====================== <br>";
+}
+
+if ($action eq "portfolio-balance") {
+
+  my $whichportfolio = param('portfolio');
+
+  if (!$run){
+    print start_form(-name=>'portfolio-balance'),
+    h2('Insert how much money you want for portfolio ID: $whichportfolio'),
+    "Money:",textfield(-name=>'money'),p
+    hidden(-name=>'act',default=>['portfolio-balance']),
+    hidden(-name=>'run',default=>['1']),
+    hidden(-name=>'portfolio',default=>[$whichportfolio]),
+    submit,
+    end_form;
+  }
 }
 
 

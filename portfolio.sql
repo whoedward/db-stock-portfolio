@@ -1,6 +1,7 @@
 create table portfolio_users (
   name varchar(64) not null primary key,
-  password varchar(64) not null
+  password varchar(64) not null,
+  constraint long_passwd CHECK (password LIKE '______%')
 );
 create table portfolio_portfolio(
   id number not null, 
@@ -29,4 +30,5 @@ INSERT into portfolio_users (name, password) VALUES ('poorjoe','poorjoe');
 INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'poorjoe', 0);
 
 INSERT into portfolio_users (name, password) VALUES ('bigshot', 'bigshot');
-INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'bigshot',0);
+INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'bigshot', 50000);
+
