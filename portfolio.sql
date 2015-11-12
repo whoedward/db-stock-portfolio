@@ -6,8 +6,16 @@ create table portfolio_portfolio(
   id number not null, 
   owner varchar(64) not null references portfolio_users(name),
   constraint portfolio_pk primary key (id, owner),
-  balance number not null
+  balance number not null,
+  constraint balance_positive CHECK (assets >= 0)
 );
+--we create a table to represent all the UNIQUE stock symbols
+create table portfolio_stock_symbols(
+  symbol varchar (16) not null unique
+);
+--then we take every stock symbol and insert it in
+INSERT into portfolio_stock_symbols (symbol) select unique symbol from cs339.StocksDaily; 
+--This table represents the ownership relation of a stock owner
 create table portfolio_stock_portfolio(
   owner varchar(64) not null references portfolio_users(name),
 --TODO: find out how long stock key can be
@@ -15,11 +23,10 @@ create table portfolio_stock_portfolio(
   owned number not null,
   constraint name unique (owner, stock)
 );
-
 --INSERT into portfolio_users (name, password, balance) VALUES ('anon', 'anonanon', 0);
 --Test users--
 INSERT into portfolio_users (name, password) VALUES ('poorjoe','poorjoe');
 INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'poorjoe', 0);
 
-INSERT into portfolio_users (name, password) VALUES ('bigshot', 'bigshoot');
+INSERT into portfolio_users (name, password) VALUES ('bigshot', 'bigshot');
 INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'bigshot',0);
