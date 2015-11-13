@@ -107,16 +107,6 @@ print "<br><br><br>";
 
 #base page is login/registration
 
-if ($action eq "register"){
-  print "Register to start making portfolios";
-
-  if(!$run){
-
-  } else {
-
-  }
-}
-
 if ($action eq "login"){
   if($logincomplain){
     print "login failed.  plz try again lol.";
@@ -134,6 +124,7 @@ if ($action eq "login"){
 }
 
 if ($action eq "register"){
+  print "Register to start making portfolios\n";
   if(!$run){
     #print form
     print start_form(-name=>'Register'),
@@ -146,20 +137,24 @@ if ($action eq "register"){
     end_form;
   } else {
     #do sql stuff
-    print "you just got registed son";
+    print "Register Succeeded!\n";
     my $registername = param('user');
     my $registerpass = param('password');
 
-    print "u chose the name $registername and password $registerpass";
+    print "u chose the name $registername and password $registerpass\n";
 
     my @insertUser;
-
+    my @insertPortfolio;
     eval {
-      @insertUser = ExecSQL($dbu, $dbp, 'INSERT INTO portfolio_users (name, password, balance) VALUES (? , ?, 0)', undef, $registername, $registerpass);
+      @insertUser = ExecSQL($dbu, $dbp, 'INSERT INTO portfolio_users (name, password) VALUES (? , ?)', undef, $registername, $registerpass);
     };
 
     if ($@) {
-      print "Insert user error!";
+      print "Insert user error!\n";
+      print $@;
+    }else{
+      print "user successfuly registered as $registername. Password is $registerpass";
+      print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=login\'>Please login here now</a>";
     }
   }
 }
