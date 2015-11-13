@@ -215,7 +215,6 @@ if ($action eq "add-stock") {
      $bal = @$a;
      print @$a,"<br>";
   } 
-
    print "<br>";
     my @output = `./quote.pl APPL`;
    print @output,"<br>";
@@ -234,8 +233,8 @@ if ($action eq "add-stock") {
     hidden(-name=>'run',default=>['1']),
     submit,
    end_form;
-   }else{
-    
+
+   }else{    
     my @output = `./quote.pl APPL`;
    my $str= @output[5];
    $str =~ s/[^.\d]//g;
@@ -247,18 +246,29 @@ if ($action eq "add-stock") {
     my $bal = param("balance");
     print $portfolioID,"<br>";
     print $symbl, "<br>", $shares;
-    my @adjustBalance;    
+    my @subBalance;    
     my @insertStock;
     my $totalCost = $shares * $str;
     print "total cost is: ", $totalCost;
     print "<br>";
     eval{
-       #@adjustBalance = ExecSQL($dbu, $dbp, 
+       @subBalance = ExecSQL($dbu, $dbp, "update portfolio_portfolio set balance = balance - $totalCost where owner = \'$user\' and id = $portfolioID"); 
        @insertStock = ExecSQL($dbu, $dbp, "INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES (\'$user\',$portfolioID, \'$symbl\', $shares)");
     };
    if($@){
-    print "could not insert stock into portfolio<br>";
-    print $@;
+    #print "could not insert stock into portfolio<br>";
+    #print $@;
+    my @adjustShares; 
+    eval{
+     @adjustShares = ExecSQL($dbu, $dbp, "update portfolio_stock_holding set shares = shares + $shares where owner = \'$user\' and stock = \'$symbl\'"); 
+   };
+    if($@){
+       print "error adjusting shares";
+     }else{
+       print "succesffuly adjusted shares";
+     }
+       
+
    }else{
     print "succesffully inserted stock into portfolio<br>";
    }
@@ -293,15 +303,21 @@ if ($action eq "add-portfolio") {
 if ($action eq "view-portfolio") {
   my $whichportfolio = param('portfolio');
   
-  print $whichportfolio,"<br>";
+  print "<h3>Portfolio ID: ",$whichportfolio,"</h3><br>";
+  my @getBalance;
+  my @getStocks;
+  eval{
+    @getStocks= ExecSQL($dbu,$dbp,"select stock from portfolio_stock_holding where owner = \'$user\' and portfolio_id = $whichportfolio");
+    @getBalance = ExecSQL($dbu, $dbp, "select balance from portfolio_portfolio where owner = \'$user\' and id = $whichportfolio");
+  }; 
+  print "<h5>Your stocks:</h5>";
+  foreach $a (@getStocks){
+     print @$a,"<br>";
+  }
   print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a><br><br>";
   #first we get each stock symbol in the portfolio
   
   print "Your current balance is:<br>";
-  my @getBalance;
-  eval{
-    @getBalance = ExecSQL($dbu, $dbp, "select balance from portfolio_portfolio where owner = \'$user\' and id = $whichportfolio");
-  };
   foreach $a (@getBalance){
      print @$a,"<br>";
   }
@@ -369,11 +385,6 @@ if ($action eq "portfolio-balance") {
   }
 }
 
-if($action eq 'test'){
-   my @output = `./quote.pl APPL`;
-   print "ASDFASDFDASFSADFDSAF<br>";
-   print @output;
-}
 
 
 print "</body>";
