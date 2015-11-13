@@ -24,6 +24,7 @@ create table portfolio_stock_holding(
 --TODO: find out how long stock key can be
   stock varchar(16) not null references portfolio_stock_symbols(symbol),
   shares number not null,
+  constraint shares_positive CHECK (shares >= 0),
   primary key (owner,portfolio_id,stock)
 );
 
@@ -34,4 +35,5 @@ INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'poorjoe', 0);
 
 INSERT into portfolio_users (name, password) VALUES ('bigshot', 'bigshot');
 INSERT into portfolio_portfolio (id, owner, balance) VALUES (1, 'bigshot', 50000);
+INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES ('bigshot', 1, 'AAPL', 100);
 
