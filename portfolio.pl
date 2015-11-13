@@ -204,27 +204,56 @@ if ($action eq "getmoney"){
 
 if ($action eq "add-stock") {
   if(!$run){
-    print "Add a stock to your portfolio:<br>";
     my $portfolioID = param("portfolio");
+     print "Your current balance is:<br>";
+  my @getBalance;
+  my $bal;
+  eval{
+    @getBalance = ExecSQL($dbu, $dbp, "select balance from portfolio_portfolio where owner = \'$user\' and id = $portfolioID");
+  };
+  foreach $a (@getBalance){
+     $bal = @$a;
+     print @$a,"<br>";
+  } 
+
+   print "<br>";
+    my @output = `./quote.pl APPL`;
+   print @output,"<br>";
+   my $str= @output[5];
+   $str =~ s/[^.\d]//g;
+   print $str;
+    print "<br>";
+ 
     print start_form(-name>'add-stock'),
     h2('Add a stock'),
     "Stock SYMBL: NOTE stock symbl must exist and must be capitalized",textfield(-name=>'name'),p
     "# of shares:",textfield(-name=>'shares'),p
     hidden(-name=>'act',default=>['add-stock']),
     hidden(-name=>'portfolio',default=>[$portfolioID]),
+    hidden(-name=>'balance',default=>[$bal]),
     hidden(-name=>'run',default=>['1']),
     submit,
    end_form;
    }else{
+    
+    my @output = `./quote.pl APPL`;
+   my $str= @output[5];
+   $str =~ s/[^.\d]//g;
+    print "<br>";
+    
     my $symbl = param("name");
     my $shares = param("shares");
     my $portfolioID = param("portfolio");
+    my $bal = param("balance");
     print $portfolioID,"<br>";
     print $symbl, "<br>", $shares;
-    my @subtractBalance;    
+    my @adjustBalance;    
     my @insertStock;
+    my $totalCost = $shares * $str;
+    print "total cost is: ", $totalCost;
+    print "<br>";
     eval{
-       #@subtractBalance = ExecSQL($dbu, $dbp
+       #@adjustBalance = ExecSQL($dbu, $dbp, 
        @insertStock = ExecSQL($dbu, $dbp, "INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES (\'$user\',$portfolioID, \'$symbl\', $shares)");
     };
    if($@){
@@ -265,12 +294,18 @@ if ($action eq "view-portfolio") {
   my $whichportfolio = param('portfolio');
   
   print $whichportfolio,"<br>";
-  print "Add a stock to your portfolio:<br>";
-  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a>";
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a><br><br>";
   #first we get each stock symbol in the portfolio
   
-  print "Add balance to portfolio:<br>";
-  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-balance&portfolio=$whichportfolio\'>Add balance</a>";
+  print "Your current balance is:<br>";
+  my @getBalance;
+  eval{
+    @getBalance = ExecSQL($dbu, $dbp, "select balance from portfolio_portfolio where owner = \'$user\' and id = $whichportfolio");
+  };
+  foreach $a (@getBalance){
+     print @$a,"<br>";
+  }
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-balance&portfolio=$whichportfolio\'>Add balance</a><br>";
   
   print "<br>Making a covar matrix for your stocks <br> ====================== <br>";
 }
@@ -278,7 +313,17 @@ if ($action eq "view-portfolio") {
 if ($action eq "add-balance"){
    if (!$run){
     my $whichportfolio = param('portfolio');
-    print start_form(-name=>'add-balance'),
+   
+    print "Your current balance is:<br>";
+  my @getBalance;
+  eval{
+    @getBalance = ExecSQL($dbu, $dbp, "select balance from portfolio_portfolio where owner = \'$user\' and id = $whichportfolio");
+  };
+  foreach $a (@getBalance){
+     print @$a,"<br>";
+  } 
+
+   print start_form(-name=>'add-balance'),
     h2('Insert positive money to deposit OR insert negative money to withdraw from portfolioID:', $whichportfolio),
     "Balance:",textfield(-name=>'balance'),p
     hidden(-name=>'act',default=>['add-balance']),
@@ -325,8 +370,9 @@ if ($action eq "portfolio-balance") {
 }
 
 if($action eq 'test'){
-   my $output = `./get_data.pl APPL G IBM`;
-   print $output;
+   my @output = `./quote.pl APPL`;
+   print "ASDFASDFDASFSADFDSAF<br>";
+   print @output;
 }
 
 
