@@ -474,10 +474,15 @@ sub ExecSQL {
   return @ret;
 }
 
+
 # The following is necessary so that DBD::Oracle can
 # find its butt
 #
 BEGIN {
+  $ENV{PORTF_DBMS}="oracle";
+  $ENV{PORTF_DB}="cs339";
+  $ENV{PORTF_DBUSER}="gml654";
+  $ENV{PORTF_DBPASS}="zgfUP58ol";
   unless ($ENV{BEGIN_BLOCK}) {
     use Cwd;
     $ENV{ORACLE_BASE}="/raid/oracle11g/app/oracle/product/11.2.0.1.0";
