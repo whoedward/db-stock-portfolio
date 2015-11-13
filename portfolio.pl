@@ -215,16 +215,17 @@ if ($action eq "add-stock") {
     hidden(-name=>'portfolio',default=>[$portfolioID]),
     hidden(-name=>'run',default=>['1']),
     submit,
-    end_form;
+   end_form;
    }else{
     my $symbl = param("name");
     my $shares = param("shares");
     my $portfolioID = param("portfolio");
     print $portfolioID,"<br>";
     print $symbl, "<br>", $shares;
-    
+    my @subtractBalance;    
     my @insertStock;
     eval{
+       #@subtractBalance = ExecSQL($dbu, $dbp
        @insertStock = ExecSQL($dbu, $dbp, "INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES (\'$user\',$portfolioID, \'$symbl\', $shares)");
     };
    if($@){
@@ -269,9 +270,44 @@ if ($action eq "view-portfolio") {
   print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a>";
   #first we get each stock symbol in the portfolio
   
-
-  print "Making a covar matrix for your stocks <br> ====================== <br>";
+  print "Add balance to portfolio:<br>";
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-balance&portfolio=$whichportfolio\'>Add balance</a>";
+  
+  print "<br>Making a covar matrix for your stocks <br> ====================== <br>";
 }
+
+if ($action eq "add-balance"){
+   if (!$run){
+    my $whichportfolio = param('portfolio');
+    print start_form(-name=>'add-balance'),
+    h2('Insert positive money to deposit OR insert negative money to withdraw from portfolioID:', $whichportfolio),
+    "Balance:",textfield(-name=>'balance'),p
+    hidden(-name=>'act',default=>['add-balance']),
+    hidden(-name=>'run',default=>['1']),
+    hidden(-name=>'portfolio',default=>[$whichportfolio]),
+    submit,
+    end_form;
+  }else{
+   my $balance = param('balance');
+   my $whichportfolio = param('portfolio');
+   my @insertBalance;
+   eval{
+     @insertBalance = ExecSQL($dbu, $dbp, "update portfolio_portfolio set balance = balance + $balance where id = $whichportfolio and owner = \'$user\'");
+   };
+    
+   if($@){
+     print "error inserting balance<br>";
+     print $@;
+   }else{
+     print "succesfully updated balance<br>";
+
+   }
+
+  } 
+}
+
+
+
 
 if ($action eq "portfolio-balance") {
 
