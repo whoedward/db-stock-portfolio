@@ -64,7 +64,7 @@ if ($action eq "login"){
 
     if(ValidUser($user,$password)){
       $outputcookiecontent=join("/",$user,$password);
-      $action = "base";
+      $action = "view-portfolio";
       $run = 1;
     } else {
       #have user attempt to login again
@@ -121,6 +121,13 @@ if ($action eq "login"){
         submit,
           end_form;
   }
+  if($run){
+    print "Successful login'\'n";
+    
+  }else{
+    print "login failed'\'n";
+  }
+   print"fuck you";
 }
 
 if ($action eq "register"){
