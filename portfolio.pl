@@ -64,7 +64,7 @@ if ($action eq "login"){
 
     if(ValidUser($user,$password)){
       $outputcookiecontent=join("/",$user,$password);
-      $action = "view-portfolio";
+      $action = "view-portfolios";
       $run = 1;
     } else {
       #have user attempt to login again
@@ -154,7 +154,8 @@ if ($action eq "register"){
     my @insertPortfolio;
     eval {
       @insertUser = ExecSQL($dbu, $dbp, 'INSERT INTO portfolio_users (name, password) VALUES (? , ?)', undef, $registername, $registerpass);
-    };
+      @insertPortfolio = ExecSQL($dbu, $dbp, "INSERT INTO portfolio_portfolio (id,owner,balance) VALUES (1,\'$registername\',0)");
+   };
 
     if ($@) {
       print "Insert user error!\n";
@@ -202,23 +203,70 @@ if ($action eq "getmoney"){
   }
 }
 
-if ($action eq "create-portfolio") {
-    print "Creating portfolio";
+if ($action eq "add-stock") {
+  if(!$run){
+    print "Add a stock to your portfolio:<br>";
+    my $portfolioID = param("portfolio");
+    print start_form(-name>'add-stock'),
+    h2('Add a stock'),
+    "Stock SYMBL: NOTE stock symbl must exist and must be capitalized",textfield(-name=>'name'),p
+    "# of shares:",textfield(-name=>'shares'),p
+    hidden(-name=>'act',default=>['add-stock']),
+    hidden(-name=>'portfolio',default=>[$portfolioID]),
+    hidden(-name=>'run',default=>['1']),
+    submit,
+    end_form;
+   }else{
+    my $symbl = param("name");
+    my $shares = param("shares");
+    my $portfolioID = param("portfolio");
+    print $portfolioID,"<br>";
+    print $symbl, "<br>", $shares;
+    
+    my @insertStock;
+    eval{
+       @insertStock = ExecSQL($dbu, $dbp, "INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES (\'$user\',$portfolioID, \'$symbl\', $shares)");
+    };
+   if($@){
+    print "could not insert stock into portfolio<br>";
+    print $@;
+   }else{
+    print "succesffully inserted stock into portfolio<br>";
+   }
+   }
 }
 
 if ($action eq "view-portfolios") {
-  print "Print out the selection of portfolios that user has.<br>";
-
-  print "Click <a href='http://muprhy.wot.eecs.northwestern.edu/~gml654/porthere to add a new portfolio.";
+  print "Your portfolios:<br>";
+  my @portfolios;
+  eval {
+       @portfolios = ExecSQL($dbu, $dbp, "SELECT id from portfolio_portfolio where owner = \'$user\'");
+  };
+  foreach $a (@portfolios){
+     print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=view-portfolio&portfolio=@$a\'>Portfolio #@$a</a><br>";
+  }
+  print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-portfolio\'>Click to add a new portfolio</a>";
 }
 
 if ($action eq "add-portfolio") {
-  print "Giving user a portfolio";
+  my @addPortfolio;
+  eval{
+    @addPortfolio = ExecSQL($dbu, $dbp, "INSERT INTO portfolio_portfolio (id, owner, balance) values ((SELECT 1+max(id) from portfolio_portfolio where owner = \'$user\'), \'$user\',0)");  
+  };
+  if($@){
+    print "cant insert<br>";
+    print $@;
+  }else{
+    print "succesfully added new portfolio";
+  }
 }
 
 if ($action eq "view-portfolio") {
   my $whichportfolio = param('portfolio');
-
+  
+  print $whichportfolio,"<br>";
+  print "Add a stock to your portfolio:<br>";
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a>";
   #first we get each stock symbol in the portfolio
   
 
