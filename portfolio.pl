@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-use stock_data_access;
 use strict;
 
 use CGI qw(:standard);
@@ -13,7 +12,7 @@ use Time::ParseDate;
 my $debug=0; # default - will be overriden by a form parameter or cookie
 my @sqlinput=();
 my @sqloutput=();
-
+use stock_data_access;
 my $dbu = "gml654";
 my $dbp = "zgfUP58ol";
 
@@ -325,6 +324,10 @@ if ($action eq "portfolio-balance") {
   }
 }
 
+if($action eq 'test'){
+   my $output = `./get_data.pl APPL G IBM`;
+   print $output;
+}
 
 
 print "</body>";
@@ -483,6 +486,7 @@ BEGIN {
   $ENV{PORTF_DB}="cs339";
   $ENV{PORTF_DBUSER}="gml654";
   $ENV{PORTF_DBPASS}="zgfUP58ol";
+  $ENV{PATH}=$ENV{PATH}.":.";
   unless ($ENV{BEGIN_BLOCK}) {
     use Cwd;
     $ENV{ORACLE_BASE}="/raid/oracle11g/app/oracle/product/11.2.0.1.0";
