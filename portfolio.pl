@@ -158,7 +158,7 @@ if ($action eq "register"){
       print $@;
     }else{
       print "User successfuly registered as $registername. Password is $registerpass<br>";
-      print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=login\'>Please login here now</a>";
+      print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~gml654/db-stock-portfolio/portfolio.pl?act=login\'>Please login here now</a>";
     }
   }
 }
@@ -199,6 +199,17 @@ if ($action eq "getmoney"){
   }
 }
 
+if ($action eq "sell-stock") {
+  if(!$run){
+    #maybe print out a list of users stocks and how many of each they own
+    print "Sell a stock.  Enter a symbol from the list of stocks that you currently own and indicate how many you want to sell."; 
+    print start_form, end_form;
+  } else {
+
+  }
+}
+
+
 if ($action eq "add-stock") {
   if(!$run){
     my $portfolioID = param("portfolio");
@@ -219,11 +230,26 @@ if ($action eq "add-stock") {
    $str =~ s/[^.\d]//g;
    print $str;
     print "<br>";
+  $bal = $getBalance[0][0];
+  print $bal;
+
+  print $@; 
+  print "<br>";
+  
+  print "test form here";
+
+
+  my @output = `./quote.pl APPL`;
+  print @output,"<br>";
+  my $str= @output[5];
+  $str =~ s/[^.\d]//g;
+  print $str;
+  print "<br>";
  
     print start_form(-name>'add-stock'),
-    h2('Add a stock'),
+    h2('Add/Sell a stock'),
     "Stock SYMBL: NOTE stock symbl must exist and must be capitalized",textfield(-name=>'name'),p
-    "# of shares:",textfield(-name=>'shares'),p
+    "# of shares (postive to buy/negative to sell):",textfield(-name=>'shares'),p
     hidden(-name=>'act',default=>['add-stock']),
     hidden(-name=>'portfolio',default=>[$portfolioID]),
     hidden(-name=>'balance',default=>[$bal]),
@@ -236,41 +262,63 @@ if ($action eq "add-stock") {
    my $str= @output[5];
    $str =~ s/[^.\d]//g;
     print "<br>, PRICE: ", $str;
-    
+  }else{
     my $symbl = param("name");
     my $shares = param("shares");
     my $portfolioID = param("portfolio");
     my $bal = param("balance");
+
     print "Portfolio ID: ",$portfolioID,"<br>";
     print "Symbol: ", $symbl, "<br> # of shares: ", $shares,"<br>";
-    my @subBalance;    
-    my @insertStock;
-    my $totalCost = $shares * $str;
-    print "total cost is: ", $totalCost;
-    print "<br>";
-    eval{
-       @subBalance = ExecSQL($dbu, $dbp, "update portfolio_portfolio set balance = balance - $totalCost where owner = \'$user\' and id = $portfolioID"); 
-       @insertStock = ExecSQL($dbu, $dbp, "INSERT into portfolio_stock_holding (owner, portfolio_id, stock, shares) VALUES (\'$user\',$portfolioID, \'$symbl\', $shares)");
-    };
-   if($@){
-    #print "could not insert stock into portfolio<br>";
-    print $@;
-    my @adjustShares; 
-    eval{
-     @adjustShares = ExecSQL($dbu, $dbp, "update portfolio_stock_holding set shares = shares + $shares where owner = \'$user\' and stock = \'$symbl\'"); 
-   };
-    if($@){
-      print $@;
-       print "error adjusting shares";
-     }else{
-       print "succesffuly adjusted shares";
-     }
-       
+    print $bal; 
+    my @quote = `./quote.pl $symbl`;
+    print "<br><br>";
+    my $sharePrice = $quote[5];
+    $sharePrice =~ s/[^.\d]//g;
+    print "share price:", $sharePrice;
 
-   }else{
-    print "succesffully inserted stock into portfolio<br>";
-   }
-   }
+    my @subBalance;
+    my $totalCost = $shares * $sharePrice;
+
+    #first figure out if the user can buy this much
+    if(defined $bal and ($bal > $totalCost)){
+      #then figure out if the user already has the stock holding entry
+      my @shares;
+
+      eval {
+        @shares = ExecSQL($dbu,$dbp,"select * from portfolio_stock_holding where owner=? and stock=? and portfolio_id=?", undef, $user, $symbl, $portfolioID);
+      };
+      
+      if ($shares[0]){
+        #it exists
+        my @addShares;
+
+        eval {
+          @addShares = ExecSQL($dbu,$dbp,"UPDATE portfolio_stock_holding SET shares = shares + ? WHERE owner = ? and portfolio_id = ? and stock = ?",undef,$shares,$user,$portfolioID,$symbl);
+        };
+      } else {
+        #it doesnt
+        my @addHolding;
+        
+        eval {
+          @addHolding = ExecSQL($dbu,$dbp,"INSERT into portfolio_stock_holding (owner,stock,shares,portfolio_id) VALUES (?,?,?,?)", undef, $user, $symbl,$shares,$portfolioID);
+        };
+        
+        print "Added $shares shares of $symbl";
+        print "Removed $totalCost from balance";
+      }
+
+      my @subtractBalance;
+      
+      eval {
+        @subtractBalance = ExecSQL($dbu,$dbp,"UPDATE portfolio_portfolio SET balance = balance - ? WHERE owner = ? and id = ?", undef,$totalCost, $user,$portfolioID);
+      };
+
+      print $@;
+    } else {
+      print "You don't have enough money to buy $sharePrice worth of shares";
+    }
+  }
 }
 
 if ($action eq "view-portfolios") {
@@ -280,9 +328,9 @@ if ($action eq "view-portfolios") {
        @portfolios = ExecSQL($dbu, $dbp, "SELECT id from portfolio_portfolio where owner = \'$user\'");
   };
   foreach $a (@portfolios){
-     print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=view-portfolio&portfolio=@$a\'>Portfolio #@$a</a><br>";
+     print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~gml654/db-stock-portfolio/portfolio.pl?act=view-portfolio&portfolio=@$a\'>Portfolio #@$a</a><br>";
   }
-  print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-portfolio\'>Click to add a new portfolio</a>";
+  print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~gml654/db-stock-portfolio/portfolio.pl?act=add-portfolio\'>Click to add a new portfolio</a>";
 }
 
 if ($action eq "add-portfolio") {
@@ -312,14 +360,14 @@ if ($action eq "view-portfolio") {
   foreach $a (@getStocks){
      print @$a,"<br>";
   }
-  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a><br><br>";
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~gml654/db-stock-portfolio/portfolio.pl?act=add-stock&portfolio=$whichportfolio\'>Add Stock</a><br><br>";
   #first we get each stock symbol in the portfolio
   
   print "Your current balance is:<br>";
   foreach $a (@getBalance){
      print @$a,"<br>";
   }
-  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=add-balance&portfolio=$whichportfolio\'>Add balance</a><br>";
+  print "<a href = \'http://murphy.wot.eecs.northwestern.edu/~gml654/db-stock-portfolio/portfolio.pl?act=add-balance&portfolio=$whichportfolio\'>Add balance</a><br>";
   
   print "<br>Making a covar matrix for your stocks <br> ====================== <br>";
 }
