@@ -45,14 +45,14 @@ if ( defined ($inputcookiecontent)){
   ($user, $password) = split(/\//, $inputcookiecontent);
   $outputcookiecontent = $inputcookiecontent; 
 }else{
-  ($user, $password) = ("anon", "anonanon");   
+  ($user, $password) = ("invalid", "invalid");   
 }
 
 if ($action eq "logout"){
   $deletecookie=1;
   $action = "login";
-  $user = "anon";
-  $password = "anonanon";
+  $user = "invalid";
+  $password = "invalid";
   $run = 1;
 }
 
@@ -74,8 +74,8 @@ if ($action eq "login"){
 
   } else {
     undef $inputcookiecontent;
-    $user = "anon";
-    $password = "anonanon";
+    $user = "invalid";
+    $password = "invalid";
   }
 }
 
@@ -108,7 +108,7 @@ print "<br><br><br>";
 
 if ($action eq "login"){
   if($logincomplain){
-    print "login failed.  plz try again lol.";
+    print "login failed.  Please try again.";
   }
   if($logincomplain or !$run){
     print start_form(-name=>'Login'),
@@ -122,19 +122,16 @@ if ($action eq "login"){
   }
   if($run){
     print "Successful login'\'n";
-    
-  }else{
-    print "login failed'\'n";
+    #TODO: check if valid user
   }
-   print"fuck you";
 }
 
 if ($action eq "register"){
-  print "Register to start making portfolios\n";
+  print "Register to start making portfolios<br>\n";
   if(!$run){
     #print form
     print start_form(-name=>'Register'),
-    h2('Gib us ur mony'),
+    h2('Create an account'),
     "Name:",textfield(-name=>'user'), p,
     "Password:",password_field(-name=>'password'),p,
     hidden(-name=>'act',default=>['register']),
@@ -143,11 +140,11 @@ if ($action eq "register"){
     end_form;
   } else {
     #do sql stuff
-    print "Register Succeeded!\n";
+    print "<br><br>\n";
     my $registername = param('user');
     my $registerpass = param('password');
 
-    print "u chose the name $registername and password $registerpass\n";
+    print "You chose the name $registername and password $registerpass\n";
 
     my @insertUser;
     my @insertPortfolio;
@@ -157,10 +154,10 @@ if ($action eq "register"){
    };
 
     if ($@) {
-      print "Insert user error!\n";
+      print "Insert user error! Please try again with a different name and password.<br>\n";
       print $@;
     }else{
-      print "user successfuly registered as $registername. Password is $registerpass";
+      print "User successfuly registered as $registername. Password is $registerpass<br>";
       print "<a href=\'http://murphy.wot.eecs.northwestern.edu/~ehe839/db-stock-portfolio/portfolio.pl?act=login\'>Please login here now</a>";
     }
   }
@@ -395,7 +392,23 @@ print "</html>";
 
 
 sub ValidUser{
-  return 1;
+  my($user,$pass)=@_;
+  
+  my @check;
+
+  eval {
+    @check = ExecSQL($dbu,$dbp,'select * from portfolio_users where name =? AND password =?', undef, $user, $pass);
+  };
+
+  if ($@){
+    return 0;
+  } else {
+    if ($check[0][0]){
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 }
 
 #
