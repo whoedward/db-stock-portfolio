@@ -213,9 +213,9 @@ if ($action eq "add-stock") {
      print @$a,"<br>";
   } 
    print "<br>";
-    my @output = `./quote.pl APPL`;
+    my @output = `./quote.pl AAPL`;
    print @output,"<br>";
-   my $str= @output[5];
+   my $str= $output[5];
    $str =~ s/[^.\d]//g;
    print $str;
     print "<br>";
@@ -235,7 +235,7 @@ if ($action eq "add-stock") {
     my @output = `./quote.pl APPL`;
    my $str= @output[5];
    $str =~ s/[^.\d]//g;
-    print "<br>";
+    print "<br>, PRICE: ", $str;
     
     my $symbl = param("name");
     my $shares = param("shares");
@@ -389,7 +389,21 @@ print "</body>";
 
 print "</html>";
 
-
+sub displayPortfolio{
+  my($user,$portfolioID,$balance,$symbl,$shares)=@_;
+  my @getStocksShares;
+  my @output = `./quote.pl AAPL`;
+   print @output,"<br>";
+   my $str= $output[5];
+   $str =~ s/[^.\d]//g;
+   print $str;
+    print "<br>";
+ 
+ eval {
+    @getStocksShares= ExecSQL($dbu,$dbp,"select stock,shares from portfolio_stock_holding where owner = \'$user\' and portfolio_id = $portfolioID");
+  };
+  print "==displayPort==", @getStocksShares;
+}
 
 sub ValidUser{
   my($user,$pass)=@_;
