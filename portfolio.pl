@@ -244,8 +244,8 @@ if ($action eq "add-stock") {
     my $shares = param("shares");
     my $portfolioID = param("portfolio");
     my $bal = param("balance");
-    print $portfolioID,"<br>";
-    print $symbl, "<br>", $shares;
+    print "Portfolio ID: ",$portfolioID,"<br>";
+    print "Symbol: ", $symbl, "<br> # of shares: ", $shares,"<br>";
     my @subBalance;    
     my @insertStock;
     my $totalCost = $shares * $str;
@@ -257,12 +257,13 @@ if ($action eq "add-stock") {
     };
    if($@){
     #print "could not insert stock into portfolio<br>";
-    #print $@;
+    print $@;
     my @adjustShares; 
     eval{
      @adjustShares = ExecSQL($dbu, $dbp, "update portfolio_stock_holding set shares = shares + $shares where owner = \'$user\' and stock = \'$symbl\'"); 
    };
     if($@){
+      print $@;
        print "error adjusting shares";
      }else{
        print "succesffuly adjusted shares";
